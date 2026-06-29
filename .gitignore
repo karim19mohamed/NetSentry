@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# PyInstaller
+*.spec
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Certificates & keys
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.pfx
+certs/
+
+# Logs
+*.log
+
+# Environment variables
+.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Installer output
+installer/output/
