@@ -5,5 +5,5 @@ requests>=2.31.0
 PyQt6>=6.6.0
 pyinstaller>=6.0.0
 
-# Windows only — install manually on Windows target
-# pywin32>=306
+# Windows only — run this separately on Windows:
+# pip install pywin32>=306
