@@ -1,33 +1,52 @@
-import time
+import sys
+
+from PyQt6.QtWidgets import QApplication
 
 from core.blocklist import init_db
 from core.cert_manager import generate_ca, ca_exists, CERT_DIR
-from core.proxy import start_proxy, stop_proxy
+from core.hosts_manager import apply_blocklist, remove_blocklist
+from core.proxy import start_proxy
+from core.system_proxy import enable as enable_proxy, disable as disable_proxy
+from ui.tray import TrayApp
 
 
 def main():
-    print("NetSentry starting...")
-
     init_db()
-    print("Database ready.")
 
     if not ca_exists():
-        print("Generating CA certificate...")
         generate_ca()
-        print(f"CA saved to: {CERT_DIR}")
-        print("Install certs/mitmproxy-ca-cert.pem into your trusted store to enable HTTPS inspection.")
-    else:
-        print("CA certificate found.")
+        try:
+            from core.cert_manager import install_ca_windows
+            install_ca_windows()
+        except Exception:
+            pass
 
-    proxy_thread = start_proxy(host='127.0.0.1', port=8080, confdir=str(CERT_DIR))
-    print("Proxy listening on 127.0.0.1:8080 — press Ctrl+C to stop.")
-
+    # Apply domain blocks to the hosts file (requires admin — silently skipped if not)
     try:
-        while proxy_thread.is_alive():
-            time.sleep(1)
-    except KeyboardInterrupt:
-        print("\nShutting down...")
-        stop_proxy()
+        apply_blocklist()
+    except PermissionError:
+        pass
+
+    # Point Windows system proxy to our local mitmproxy instance
+    enable_proxy(host='127.0.0.1', port=8080)
+
+    start_proxy(host='127.0.0.1', port=8080, confdir=str(CERT_DIR))
+
+    app = QApplication(sys.argv)
+    app.setQuitOnLastWindowClosed(False)
+
+    tray = TrayApp(app)  # must be kept alive for the duration of the app
+
+    ret = app.exec()
+
+    # Cleanup on exit
+    disable_proxy()
+    try:
+        remove_blocklist()
+    except PermissionError:
+        pass
+
+    sys.exit(ret)
 
 
 if __name__ == '__main__':
