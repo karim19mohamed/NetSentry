@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import sqlite3
 from pathlib import Path
 
@@ -78,6 +80,11 @@ def is_path_blocked(domain: str, path: str) -> bool:
             'SELECT path FROM path_rules WHERE domain = ?', (domain,)
         ).fetchall()
     return any(path.startswith(rule) for (rule,) in rows)
+
+
+def get_all_path_rules() -> list[tuple[str, str]]:
+    with _connect() as conn:
+        return conn.execute('SELECT domain, path FROM path_rules').fetchall()
 
 
 def get_all_blocked_domains() -> list[str]:

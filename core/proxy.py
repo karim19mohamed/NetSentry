@@ -1,29 +1,17 @@
+from __future__ import annotations
+
 import asyncio
 import threading
+from pathlib import Path
 
 from mitmproxy import http, options
 from mitmproxy.tools.dump import DumpMaster
 
-_BLOCK_PAGE = """\
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Blocked — NetSentry</title>
-  <style>
-    body {{ font-family: Arial, sans-serif; text-align: center;
-            padding: 80px; background: #f5f5f5; }}
-    h1   {{ color: #c0392b; font-size: 2rem; }}
-    p    {{ color: #555; }}
-    code {{ background: #eee; padding: 2px 8px; border-radius: 4px; }}
-  </style>
-</head>
-<body>
-  <h1>Access Blocked</h1>
-  <p>This website has been blocked by <strong>NetSentry</strong>.</p>
-  <p><code>{url}</code></p>
-</body>
-</html>"""
+_BLOCK_PAGE_PATH = Path(__file__).parent.parent / 'ui' / 'block_page.html'
+
+
+def _block_page(url: str) -> str:
+    return _BLOCK_PAGE_PATH.read_text(encoding='utf-8').replace('{url}', url)
 
 
 class _NetSentryAddon:
@@ -36,7 +24,7 @@ class _NetSentryAddon:
         if is_domain_blocked(host) or is_path_blocked(host, path):
             flow.response = http.Response.make(
                 403,
-                _BLOCK_PAGE.format(url=flow.request.pretty_url),
+                _block_page(flow.request.pretty_url),
                 {'Content-Type': 'text/html; charset=utf-8'}
             )
 

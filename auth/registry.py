@@ -3,6 +3,7 @@ Persists the password hash.
 - Windows : HKEY_LOCAL_MACHINE\\SOFTWARE\\NetSentry  (requires admin)
 - Linux   : data/.auth  (development fallback only)
 """
+from __future__ import annotations
 
 import platform
 from pathlib import Path
